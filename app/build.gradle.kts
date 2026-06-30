@@ -51,6 +51,8 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation(libs.androidx.camera.extensions)
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.9.0")
+    implementation("androidx.compose.ui:ui-text:1.9.0")
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
