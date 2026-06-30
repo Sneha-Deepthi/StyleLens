@@ -17,8 +17,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             StyleLensTheme {
-//                CameraScreen()
-                SplashScreen()
+                CameraScreen()
+//                SplashScreen()
             }
         }
     }
