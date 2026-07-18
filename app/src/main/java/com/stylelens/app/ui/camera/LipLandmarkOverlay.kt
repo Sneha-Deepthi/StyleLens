@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.drawscope.Stroke
 import com.google.mediapipe.tasks.vision.facelandmarker.FaceLandmarkerResult
 
@@ -171,20 +172,23 @@ fun LipLandmarkOverlay(
 
         // Draw temporary diagnostic outlines.
 
-        drawPath(
-            path = outerPath,
-            color = Color.Green,
-            style = Stroke(
-                width = 4f
-            )
-        )
+        // Combine outer and inner contours into one lip shape.
+// EvenOdd means:
+// - inside outer contour = filled
+// - inside inner contour = cut out
+        val lipstickPath = Path().apply {
 
+            fillType = PathFillType.EvenOdd
+
+            addPath(outerPath)
+            addPath(innerPath)
+        }
+
+// Temporary lipstick shade.
+// Semi-transparent so the natural lip texture remains visible.
         drawPath(
-            path = innerPath,
-            color = Color.Yellow,
-            style = Stroke(
-                width = 3f
-            )
+            path = lipstickPath,
+            color = Color(0xFFD94A64).copy(alpha = 0.45f)
         )
     }
 }
