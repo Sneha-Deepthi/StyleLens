@@ -8,13 +8,15 @@ import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.camera.core.ImageAnalysis
+import com.stylelens.app.vision.FaceLandmarkerHelper
 import java.util.concurrent.Executors
 
 object CameraController {
 
     fun startCamera(
         context: Context,
-        previewView: PreviewView
+        previewView: PreviewView,
+        faceLandmarkerHelper: FaceLandmarkerHelper
     ) {
 
         val cameraProviderFuture =
@@ -27,17 +29,18 @@ object CameraController {
             val preview = Preview.Builder().build()
 
             val imageAnalysis = ImageAnalysis.Builder()
-                .setBackpressureStrategy(
-                    ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
-                )
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
                 .build()
 
             imageAnalysis.setAnalyzer(
                 Executors.newSingleThreadExecutor()
             ) { imageProxy ->
 
-                // We'll process this frame using MediaPipe
-                imageProxy.close()
+                faceLandmarkerHelper.detectLiveStream(
+                    imageProxy,
+                    true
+                )
 
             }
 

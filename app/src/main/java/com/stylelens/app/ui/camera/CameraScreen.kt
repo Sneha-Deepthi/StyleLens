@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import com.stylelens.app.camera.CameraPreview
+import com.stylelens.app.vision.FaceLandmarkerHelper
 
 @Composable
 fun CameraScreen() {
@@ -21,6 +22,7 @@ fun CameraScreen() {
     val context = LocalContext.current
 
     var hasCameraPermission by remember {
+
         mutableStateOf(
             ContextCompat.checkSelfPermission(
                 context,
@@ -29,20 +31,47 @@ fun CameraScreen() {
         )
     }
 
+    var faceResult by remember {
+        mutableStateOf<
+                FaceLandmarkerHelper.ResultBundle?
+                >(null)
+    }
+
     val permissionLauncher =
         rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestPermission()
+            contract =
+                ActivityResultContracts.RequestPermission()
         ) { granted ->
 
             hasCameraPermission = granted
-
         }
 
     if (hasCameraPermission) {
 
-        CameraPreview(
+        Box(
             modifier = Modifier.fillMaxSize()
-        )
+        ) {
+
+            // Camera layer
+            CameraPreview(
+                modifier = Modifier.fillMaxSize(),
+
+                onFaceResult = { result ->
+
+                    faceResult = result
+                }
+            )
+
+            // Transparent landmark layer
+            LipLandmarkOverlay(
+                result = faceResult?.result,
+                inputImageWidth =
+                    faceResult?.inputImageWidth ?: 0,
+                inputImageHeight =
+                    faceResult?.inputImageHeight ?: 0,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
 
     } else {
 
@@ -53,14 +82,15 @@ fun CameraScreen() {
 
             Button(
                 onClick = {
-                    permissionLauncher.launch(Manifest.permission.CAMERA)
+
+                    permissionLauncher.launch(
+                        Manifest.permission.CAMERA
+                    )
                 }
             ) {
+
                 Text("Allow Camera")
             }
-
         }
-
     }
-
 }
