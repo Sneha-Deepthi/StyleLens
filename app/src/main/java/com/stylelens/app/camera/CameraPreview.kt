@@ -16,7 +16,8 @@ fun CameraPreview(
     modifier: Modifier = Modifier,
     onFaceResult: (
         FaceLandmarkerHelper.ResultBundle
-    ) -> Unit
+    ) -> Unit,
+    onFaceLost: () -> Unit
 ) {
 
     val context = LocalContext.current
@@ -63,6 +64,8 @@ fun CameraPreview(
                             "StyleLens",
                             "No face detected"
                         )
+
+                        onFaceLost()
                     }
                 }
         )

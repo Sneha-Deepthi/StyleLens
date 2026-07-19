@@ -64,6 +64,10 @@ fun CameraScreen() {
 
                 onFaceResult = { result ->
                     faceResult = result
+                },
+
+                onFaceLost = {
+                    faceResult = null
                 }
             )
 
