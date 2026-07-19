@@ -115,48 +115,28 @@ fun LipLandmarkOverlay(
             )
         }
 
-        fun createSmoothPath(indices: List<Int>): Path {
-
-            val points = indices.map { index ->
-                point(index)
-            }
+        fun createLipPath(indices: List<Int>): Path {
 
             val path = Path()
 
-            if (points.size < 2) {
+            if (indices.isEmpty()) {
                 return path
             }
 
-            // Start at the midpoint between the last and first points
-            val firstMidX =
-                (points.last().x + points.first().x) / 2f
-
-            val firstMidY =
-                (points.last().y + points.first().y) / 2f
+            val firstPoint = point(indices.first())
 
             path.moveTo(
-                firstMidX,
-                firstMidY
+                firstPoint.x,
+                firstPoint.y
             )
 
-            for (i in points.indices) {
+            indices.drop(1).forEach { index ->
 
-                val current = points[i]
+                val p = point(index)
 
-                val next =
-                    points[(i + 1) % points.size]
-
-                val midX =
-                    (current.x + next.x) / 2f
-
-                val midY =
-                    (current.y + next.y) / 2f
-
-                path.quadraticTo(
-                    current.x,
-                    current.y,
-                    midX,
-                    midY
+                path.lineTo(
+                    p.x,
+                    p.y
                 )
             }
 
@@ -170,7 +150,7 @@ fun LipLandmarkOverlay(
         // -------------------------
 
         val outerPath =
-            createSmoothPath(outerLip)
+            createLipPath(outerLip)
 
 
         // -------------------------
@@ -179,7 +159,7 @@ fun LipLandmarkOverlay(
 
 
         val innerPath =
-            createSmoothPath(innerLip)
+            createLipPath(innerLip)
 
 
         // Draw temporary diagnostic outlines.
@@ -198,9 +178,21 @@ fun LipLandmarkOverlay(
 
 // Temporary lipstick shade.
 // Semi-transparent so the natural lip texture remains visible.
+        val lipstickColor = Color(0xFFD94A64)
+
+// Base tint.
+// Low opacity keeps the real lip texture visible.
         drawPath(
             path = lipstickPath,
-            color = Color(0xFFD94A64).copy(alpha = 0.45f)
+            color = lipstickColor.copy(alpha = 0.24f)
         )
+
+// Very subtle second layer to strengthen the shade
+// without making the lips look fully painted.
+        drawPath(
+            path = lipstickPath,
+            color = lipstickColor.copy(alpha = 0.08f)
+        )
+
     }
 }
