@@ -16,6 +16,7 @@ fun LipLandmarkOverlay(
     inputImageWidth: Int,
     inputImageHeight: Int,
     lipstickColor: Color,
+    intensity: Float,
     modifier: Modifier = Modifier
 ) {
 
@@ -181,14 +182,16 @@ fun LipLandmarkOverlay(
 // Low opacity keeps the real lip texture visible.
         drawPath(
             path = lipstickPath,
-            color = lipstickColor.copy(alpha = 0.24f)
+            color = lipstickColor.copy(
+                alpha = intensity * 0.75f
+            )
         )
 
-// Very subtle second layer to strengthen the shade
-// without making the lips look fully painted.
         drawPath(
             path = lipstickPath,
-            color = lipstickColor.copy(alpha = 0.08f)
+            color = lipstickColor.copy(
+                alpha = intensity * 0.25f
+            )
         )
 
     }

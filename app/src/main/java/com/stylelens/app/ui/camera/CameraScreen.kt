@@ -79,6 +79,9 @@ fun CameraScreen() {
                 lipstickColor =
                     selectedShade.color,
 
+                intensity =
+                    selectedShade.intensity,
+
                 modifier = Modifier.fillMaxSize()
             )
 
