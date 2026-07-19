@@ -37,6 +37,13 @@ fun CameraScreen() {
                 >(null)
     }
 
+    var selectedShade by remember {
+
+        mutableStateOf(
+            lipstickShades[1]
+        )
+    }
+
     val permissionLauncher =
         rememberLauncherForActivityResult(
             contract =
@@ -52,24 +59,43 @@ fun CameraScreen() {
             modifier = Modifier.fillMaxSize()
         ) {
 
-            // Camera layer
             CameraPreview(
                 modifier = Modifier.fillMaxSize(),
 
                 onFaceResult = { result ->
-
                     faceResult = result
                 }
             )
 
-            // Transparent landmark layer
             LipLandmarkOverlay(
                 result = faceResult?.result,
+
                 inputImageWidth =
                     faceResult?.inputImageWidth ?: 0,
+
                 inputImageHeight =
                     faceResult?.inputImageHeight ?: 0,
+
+                lipstickColor =
+                    selectedShade.color,
+
                 modifier = Modifier.fillMaxSize()
+            )
+
+            ShadeSelector(
+                shades = lipstickShades,
+
+                selectedShade =
+                    selectedShade,
+
+                onShadeSelected = { shade ->
+                    selectedShade = shade
+                },
+
+                modifier = Modifier
+                    .align(
+                        Alignment.BottomCenter
+                    )
             )
         }
 

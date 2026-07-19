@@ -15,6 +15,7 @@ fun LipLandmarkOverlay(
     result: FaceLandmarkerResult?,
     inputImageWidth: Int,
     inputImageHeight: Int,
+    lipstickColor: Color,
     modifier: Modifier = Modifier
 ) {
 
@@ -175,10 +176,6 @@ fun LipLandmarkOverlay(
             addPath(outerPath)
             addPath(innerPath)
         }
-
-// Temporary lipstick shade.
-// Semi-transparent so the natural lip texture remains visible.
-        val lipstickColor = Color(0xFFD94A64)
 
 // Base tint.
 // Low opacity keeps the real lip texture visible.
