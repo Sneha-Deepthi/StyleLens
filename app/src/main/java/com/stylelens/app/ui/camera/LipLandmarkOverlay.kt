@@ -8,7 +8,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
-import androidx.compose.ui.graphics.drawscope.Stroke
 import com.google.mediapipe.tasks.vision.facelandmarker.FaceLandmarkerResult
 
 @Composable
@@ -116,59 +115,72 @@ fun LipLandmarkOverlay(
             )
         }
 
+        fun createSmoothPath(indices: List<Int>): Path {
+
+            val points = indices.map { index ->
+                point(index)
+            }
+
+            val path = Path()
+
+            if (points.size < 2) {
+                return path
+            }
+
+            // Start at the midpoint between the last and first points
+            val firstMidX =
+                (points.last().x + points.first().x) / 2f
+
+            val firstMidY =
+                (points.last().y + points.first().y) / 2f
+
+            path.moveTo(
+                firstMidX,
+                firstMidY
+            )
+
+            for (i in points.indices) {
+
+                val current = points[i]
+
+                val next =
+                    points[(i + 1) % points.size]
+
+                val midX =
+                    (current.x + next.x) / 2f
+
+                val midY =
+                    (current.y + next.y) / 2f
+
+                path.quadraticTo(
+                    current.x,
+                    current.y,
+                    midX,
+                    midY
+                )
+            }
+
+            path.close()
+
+            return path
+        }
+
         // -------------------------
         // OUTER LIP PATH
         // -------------------------
 
-        val outerPath = Path()
+        val outerPath =
+            createSmoothPath(outerLip)
 
-        val firstOuter = point(outerLip.first())
-
-        outerPath.moveTo(
-            firstOuter.x,
-            firstOuter.y
-        )
-
-        outerLip
-            .drop(1)
-            .forEach { index ->
-
-                val p = point(index)
-
-                outerPath.lineTo(
-                    p.x,
-                    p.y
-                )
-            }
-
-        outerPath.close()
 
         // -------------------------
         // INNER LIP PATH
         // -------------------------
 
-        val innerPath = Path()
 
-        val firstInner = point(innerLip.first())
+        val innerPath =
+            createSmoothPath(innerLip)
 
-        innerPath.moveTo(
-            firstInner.x,
-            firstInner.y
-        )
-
-        innerLip
-            .drop(1)
-            .forEach { index ->
-
-                val p = point(index)
-
-                innerPath.lineTo(
-                    p.x,
-                    p.y
-                )
-            }
-
-        innerPath.close()
 
         // Draw temporary diagnostic outlines.
 
