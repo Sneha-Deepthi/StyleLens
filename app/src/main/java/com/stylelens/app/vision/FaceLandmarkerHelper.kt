@@ -199,6 +199,46 @@ class FaceLandmarkerHelper(
         }
     }
 
+    fun detectBitmap(
+        bitmap: Bitmap,
+        rotationDegrees: Int,
+        isFrontCamera: Boolean,
+        frameTime: Long = SystemClock.uptimeMillis()
+    ) {
+        if (runningMode != RunningMode.LIVE_STREAM) {
+            throw IllegalArgumentException(
+                "Attempting to call detectBitmap " +
+                        "while not using RunningMode.LIVE_STREAM"
+            )
+        }
+
+        val matrix = Matrix().apply {
+            postRotate(rotationDegrees.toFloat())
+
+            if (isFrontCamera) {
+                postScale(-1f, 1f)
+            }
+        }
+
+        val rotatedBitmap = Bitmap.createBitmap(
+            bitmap,
+            0,
+            0,
+            bitmap.width,
+            bitmap.height,
+            matrix,
+            true
+        )
+
+        val mpImage =
+            BitmapImageBuilder(rotatedBitmap).build()
+
+        detectAsync(
+            mpImage,
+            frameTime
+        )
+    }
+
     // Run face landmark using MediaPipe Face Landmarker API
     @VisibleForTesting
     fun detectAsync(mpImage: MPImage, frameTime: Long) {

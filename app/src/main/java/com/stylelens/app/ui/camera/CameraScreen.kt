@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import com.stylelens.app.camera.CameraPreview
 import com.stylelens.app.vision.FaceLandmarkerHelper
+import com.stylelens.app.vision.HandLandmarkerHelper
 
 @Composable
 fun CameraScreen() {
@@ -29,6 +30,12 @@ fun CameraScreen() {
                 Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED
         )
+    }
+
+    var handResult by remember {
+        mutableStateOf<
+                HandLandmarkerHelper.ResultBundle?
+                >(null)
     }
 
     var faceResult by remember {
@@ -53,6 +60,15 @@ fun CameraScreen() {
             hasCameraPermission = granted
         }
 
+    val isLipOccluded =
+        LipOcclusionDetector.isHandOverMouth(
+            faceResult =
+                faceResult?.result,
+
+            handResult =
+                handResult?.result
+        )
+
     if (hasCameraPermission) {
 
         Box(
@@ -68,11 +84,24 @@ fun CameraScreen() {
 
                 onFaceLost = {
                     faceResult = null
+                },
+
+                onHandResult = { result ->
+                    handResult = result
+                },
+
+                onHandLost = {
+                    handResult = null
                 }
             )
 
             LipLandmarkOverlay(
-                result = faceResult?.result,
+                result =
+                    if (isLipOccluded) {
+                        null
+                    } else {
+                        faceResult?.result
+                    },
 
                 inputImageWidth =
                     faceResult?.inputImageWidth ?: 0,

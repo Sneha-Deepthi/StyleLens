@@ -9,6 +9,10 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.camera.core.ImageAnalysis
 import com.stylelens.app.vision.FaceLandmarkerHelper
+import android.graphics.Bitmap
+import android.os.SystemClock
+import android.util.Log
+import com.stylelens.app.vision.HandLandmarkerHelper
 import java.util.concurrent.Executors
 
 object CameraController {
@@ -16,7 +20,8 @@ object CameraController {
     fun startCamera(
         context: Context,
         previewView: PreviewView,
-        faceLandmarkerHelper: FaceLandmarkerHelper
+        faceLandmarkerHelper: FaceLandmarkerHelper,
+        handLandmarkerHelper: HandLandmarkerHelper
     ) {
 
         val cameraProviderFuture =
@@ -37,11 +42,61 @@ object CameraController {
                 Executors.newSingleThreadExecutor()
             ) { imageProxy ->
 
-                faceLandmarkerHelper.detectLiveStream(
-                    imageProxy,
-                    true
-                )
+                val width = imageProxy.width
+                val height = imageProxy.height
 
+                val rotationDegrees =
+                    imageProxy.imageInfo.rotationDegrees
+
+                val frameTime =
+                    SystemClock.uptimeMillis()
+
+                try {
+
+                    val buffer =
+                        imageProxy.planes[0].buffer
+
+                    buffer.rewind()
+
+                    val bitmap =
+                        Bitmap.createBitmap(
+                            width,
+                            height,
+                            Bitmap.Config.ARGB_8888
+                        )
+
+                    bitmap.copyPixelsFromBuffer(buffer)
+
+                    // Send the SAME camera frame to Face Landmarker.
+                    faceLandmarkerHelper.detectBitmap(
+                        bitmap = bitmap,
+                        rotationDegrees = rotationDegrees,
+                        isFrontCamera = true,
+                        frameTime = frameTime
+                    )
+
+                    // Send the SAME camera frame to Hand Landmarker.
+                    handLandmarkerHelper.detectBitmap(
+                        bitmap = bitmap,
+                        rotationDegrees = rotationDegrees,
+                        isFrontCamera = true,
+                        frameTime = frameTime
+                    )
+
+                } catch (e: Exception) {
+
+                    Log.e(
+                        "CameraController",
+                        "Error analyzing camera frame",
+                        e
+                    )
+
+                } finally {
+
+                    // CameraController now owns ImageProxy.
+                    // Close every frame exactly once.
+                    imageProxy.close()
+                }
             }
 
             preview.surfaceProvider =

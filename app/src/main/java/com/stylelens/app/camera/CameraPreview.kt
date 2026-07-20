@@ -10,14 +10,23 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.stylelens.app.vision.FaceLandmarkerHelper
+import com.stylelens.app.vision.HandLandmarkerHelper
 
 @Composable
 fun CameraPreview(
     modifier: Modifier = Modifier,
+
     onFaceResult: (
         FaceLandmarkerHelper.ResultBundle
     ) -> Unit,
-    onFaceLost: () -> Unit
+
+    onFaceLost: () -> Unit,
+
+    onHandResult: (
+        HandLandmarkerHelper.ResultBundle
+    ) -> Unit,
+
+    onHandLost: () -> Unit
 ) {
 
     val context = LocalContext.current
@@ -71,10 +80,64 @@ fun CameraPreview(
         )
     }
 
+    val handLandmarkerHelper = remember {
+
+        HandLandmarkerHelper(
+            context = context,
+            runningMode = RunningMode.LIVE_STREAM,
+
+            listener =
+                object : HandLandmarkerHelper.LandmarkerListener {
+
+                    override fun onResults(
+                        resultBundle:
+                        HandLandmarkerHelper.ResultBundle
+                    ) {
+
+                        Log.d(
+                            "StyleLensHand",
+                            "Hands detected: ${
+                                resultBundle.result
+                                    .landmarks()
+                                    .size
+                            }"
+                        )
+
+                        onHandResult(resultBundle)
+                    }
+
+                    override fun onError(
+                        error: String
+                    ) {
+
+                        Log.e(
+                            "StyleLensHand",
+                            "Hand Landmarker error: $error"
+                        )
+                    }
+
+                    override fun onEmpty() {
+
+                        Log.d(
+                            "StyleLensHand",
+                            "No hand detected"
+                        )
+
+                        onHandLost()
+                    }
+                }
+        )
+    }
+
     DisposableEffect(Unit) {
 
         onDispose {
-            faceLandmarkerHelper.clearFaceLandmarker()
+
+            faceLandmarkerHelper
+                .clearFaceLandmarker()
+
+            handLandmarkerHelper
+                .clearHandLandmarker()
         }
     }
 
@@ -94,8 +157,12 @@ fun CameraPreview(
             CameraController.startCamera(
                 context = context,
                 previewView = previewView,
+
                 faceLandmarkerHelper =
-                    faceLandmarkerHelper
+                    faceLandmarkerHelper,
+
+                handLandmarkerHelper =
+                    handLandmarkerHelper
             )
 
             previewView
