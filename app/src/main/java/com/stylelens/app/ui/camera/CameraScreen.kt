@@ -60,14 +60,17 @@ fun CameraScreen() {
             hasCameraPermission = granted
         }
 
-    val isLipOccluded =
-        LipOcclusionDetector.isHandOverMouth(
-            faceResult =
-                faceResult?.result,
+    val occlusionStabilizer =
+        remember {
+            OcclusionStabilizer(
+                framesToHide = 2,
+                framesToShow = 4
+            )
+        }
 
-            handResult =
-                handResult?.result
-        )
+    var isLipOccluded by remember {
+        mutableStateOf(false)
+    }
 
     if (hasCameraPermission) {
 
@@ -83,15 +86,39 @@ fun CameraScreen() {
                 },
 
                 onFaceLost = {
+
                     faceResult = null
+                    handResult = null
+
+                    occlusionStabilizer.reset()
+
+                    isLipOccluded = false
                 },
 
                 onHandResult = { result ->
+
                     handResult = result
+
+                    val rawOccluded =
+                        LipOcclusionDetector.isHandOverMouth(
+                            faceResult = faceResult?.result,
+                            handResult = result.result
+                        )
+
+                    isLipOccluded =
+                        occlusionStabilizer.update(
+                            rawOccluded
+                        )
                 },
 
                 onHandLost = {
+
                     handResult = null
+
+                    isLipOccluded =
+                        occlusionStabilizer.update(
+                            false
+                        )
                 }
             )
 
