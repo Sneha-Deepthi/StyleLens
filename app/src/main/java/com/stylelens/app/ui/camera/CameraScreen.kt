@@ -174,7 +174,7 @@ fun CameraScreen() {
                         Alignment.BottomCenter
                     )
                     .offset(
-                        y = 135.dp
+                        y = 160.dp
                     )
             )
         }

@@ -5,9 +5,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -20,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.roundToInt
 
 @Composable
 fun ShadeSelector(
@@ -37,6 +43,13 @@ fun ShadeSelector(
         shades.indexOf(selectedShade)
             .coerceAtLeast(0)
 
+    val segmentAngle =
+        360f / shades.size
+
+    var dragRotation by remember {
+        mutableFloatStateOf(0f)
+    }
+
     /*
      * Diameter of the complete wheel.
      *
@@ -52,7 +65,65 @@ fun ShadeSelector(
 
     Box(
         modifier = modifier
-            .size(wheelSize),
+            .size(wheelSize)
+            .pointerInput(
+                selectedShade,
+                shades
+            ) {
+
+                detectDragGestures(
+
+                    onDrag = { change, dragAmount ->
+
+                        change.consume()
+
+                        /*
+                         * Horizontal movement controls
+                         * the temporary wheel rotation.
+                         */
+                        dragRotation +=
+                            dragAmount.x * 0.25f
+                    },
+
+                    onDragEnd = {
+
+                        /*
+                         * Determine how many shade
+                         * positions the user moved.
+                         */
+                        val steps =
+                            (
+                                    dragRotation /
+                                            segmentAngle
+                                    )
+                                .roundToInt()
+
+                        if (steps != 0) {
+
+                            val newIndex =
+                                (
+                                        selectedIndex -
+                                                steps
+                                        )
+                                    .mod(shades.size)
+
+                            onShadeSelected(
+                                shades[newIndex]
+                            )
+                        }
+
+                        /*
+                         * Selected shade becomes the new
+                         * top-center position.
+                         */
+                        dragRotation = 0f
+                    },
+
+                    onDragCancel = {
+                        dragRotation = 0f
+                    }
+                )
+            },
         contentAlignment = Alignment.Center
     ) {
 
@@ -85,9 +156,6 @@ fun ShadeSelector(
                 x = padding,
                 y = padding
             )
-
-            val segmentAngle =
-                360f / shades.size
 
             /*
              * Draw one translucent segment
@@ -123,7 +191,8 @@ fun ShadeSelector(
                 val centerAngle =
                     -90f +
                             relativeIndex *
-                            segmentAngle
+                            segmentAngle +
+                            dragRotation
 
                 val startAngle =
                     centerAngle -
@@ -205,10 +274,8 @@ fun ShadeSelector(
             val angle =
                 -90f +
                         relativeIndex *
-                        (
-                                360f /
-                                        shades.size
-                                )
+                        segmentAngle +
+                        dragRotation
 
             val radians =
                 Math.toRadians(
