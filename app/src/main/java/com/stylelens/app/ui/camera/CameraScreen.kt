@@ -160,6 +160,19 @@ fun CameraScreen() {
                 modifier = Modifier.fillMaxSize()
             )
 
+            CameraTopControls(
+                onCloseClick = {
+                    // Navigation will be connected later
+                },
+
+                onFlipCameraClick = {
+                    // Camera switching will be connected later
+                },
+
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+            )
+
             ShadeSelector(
                 shades = lipstickShades,
 
