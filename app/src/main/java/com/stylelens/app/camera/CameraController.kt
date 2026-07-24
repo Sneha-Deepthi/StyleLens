@@ -10,6 +10,7 @@ import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.camera.core.ImageAnalysis
 import com.stylelens.app.vision.FaceLandmarkerHelper
 import android.graphics.Bitmap
+import android.graphics.Bitmap.createBitmap
 import android.os.SystemClock
 import android.util.Log
 import com.stylelens.app.vision.HandLandmarkerHelper
@@ -21,7 +22,8 @@ object CameraController {
         context: Context,
         previewView: PreviewView,
         faceLandmarkerHelper: FaceLandmarkerHelper,
-        handLandmarkerHelper: HandLandmarkerHelper
+        handLandmarkerHelper: HandLandmarkerHelper,
+        isFrontCamera: Boolean
     ) {
 
         val cameraProviderFuture =
@@ -59,7 +61,7 @@ object CameraController {
                     buffer.rewind()
 
                     val bitmap =
-                        Bitmap.createBitmap(
+                        createBitmap(
                             width,
                             height,
                             Bitmap.Config.ARGB_8888
@@ -71,7 +73,7 @@ object CameraController {
                     faceLandmarkerHelper.detectBitmap(
                         bitmap = bitmap,
                         rotationDegrees = rotationDegrees,
-                        isFrontCamera = true,
+                        isFrontCamera = isFrontCamera,
                         frameTime = frameTime
                     )
 
@@ -79,7 +81,7 @@ object CameraController {
                     handLandmarkerHelper.detectBitmap(
                         bitmap = bitmap,
                         rotationDegrees = rotationDegrees,
-                        isFrontCamera = true,
+                        isFrontCamera = isFrontCamera,
                         frameTime = frameTime
                     )
 
@@ -103,7 +105,11 @@ object CameraController {
                 previewView.surfaceProvider
 
             val cameraSelector =
-                CameraSelector.DEFAULT_FRONT_CAMERA
+                if (isFrontCamera) {
+                    CameraSelector.DEFAULT_FRONT_CAMERA
+                } else {
+                    CameraSelector.DEFAULT_BACK_CAMERA
+                }
 
             val lifecycleOwner =
                 previewView.findViewTreeLifecycleOwner()

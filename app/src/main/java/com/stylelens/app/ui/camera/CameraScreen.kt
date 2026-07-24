@@ -63,6 +63,10 @@ fun CameraScreen() {
         )
     }
 
+    var isFrontCamera by remember {
+        mutableStateOf(true)
+    }
+
     val permissionLauncher =
         rememberLauncherForActivityResult(
             contract =
@@ -95,6 +99,8 @@ fun CameraScreen() {
 
             CameraPreview(
                 modifier = Modifier.fillMaxSize(),
+
+                isFrontCamera = isFrontCamera,
 
                 onFaceResult = { result ->
                     faceResult = result
@@ -166,7 +172,16 @@ fun CameraScreen() {
                 },
 
                 onFlipCameraClick = {
-                    // Camera switching will be connected later
+
+                    // Clear results from the previous camera
+                    // before switching to the new one.
+                    faceResult = null
+                    handResult = null
+
+                    occlusionStabilizer.reset()
+                    isLipOccluded = false
+
+                    isFrontCamera = !isFrontCamera
                 },
 
                 modifier = Modifier

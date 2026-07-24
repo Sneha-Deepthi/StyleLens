@@ -15,6 +15,7 @@ import com.stylelens.app.vision.HandLandmarkerHelper
 @Composable
 fun CameraPreview(
     modifier: Modifier = Modifier,
+    isFrontCamera: Boolean,
 
     onFaceResult: (
         FaceLandmarkerHelper.ResultBundle
@@ -162,10 +163,30 @@ fun CameraPreview(
                     faceLandmarkerHelper,
 
                 handLandmarkerHelper =
-                    handLandmarkerHelper
+                    handLandmarkerHelper,
+
+                isFrontCamera =
+                    isFrontCamera
             )
 
             previewView
+        },
+
+        update = { previewView ->
+
+            CameraController.startCamera(
+                context = context,
+                previewView = previewView,
+
+                faceLandmarkerHelper =
+                    faceLandmarkerHelper,
+
+                handLandmarkerHelper =
+                    handLandmarkerHelper,
+
+                isFrontCamera =
+                    isFrontCamera
+            )
         }
     )
 }
