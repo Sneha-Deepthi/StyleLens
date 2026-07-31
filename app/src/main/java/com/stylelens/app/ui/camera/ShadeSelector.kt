@@ -1,5 +1,8 @@
 package com.stylelens.app.ui.camera
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.runtime.getValue
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -49,6 +52,19 @@ fun ShadeSelector(
     var dragRotation by remember {
         mutableFloatStateOf(0f)
     }
+
+    var targetRotation by remember {
+        mutableFloatStateOf(0f)
+    }
+
+    val animatedRotation by animateFloatAsState(
+        targetValue = targetRotation,
+        animationSpec = spring(
+            dampingRatio = 0.82f,
+            stiffness = 420f
+        ),
+        label = "WheelRotation"
+    )
 
     /*
      * Diameter of the complete wheel.
@@ -116,6 +132,7 @@ fun ShadeSelector(
                          * Selected shade becomes the new
                          * top-center position.
                          */
+                        targetRotation = 0f
                         dragRotation = 0f
                     },
 
@@ -192,7 +209,8 @@ fun ShadeSelector(
                     -90f +
                             relativeIndex *
                             segmentAngle +
-                            dragRotation
+                            dragRotation +
+                            animatedRotation
 
                 val startAngle =
                     centerAngle -
@@ -275,7 +293,8 @@ fun ShadeSelector(
                 -90f +
                         relativeIndex *
                         segmentAngle +
-                        dragRotation
+                        dragRotation +
+                        animatedRotation
 
             val radians =
                 Math.toRadians(

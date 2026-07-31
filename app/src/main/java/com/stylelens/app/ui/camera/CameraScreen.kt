@@ -205,6 +205,16 @@ fun CameraScreen() {
                         y = 160.dp
                     )
             )
+            CaptureButton(
+
+                onClick = {
+                    // Capture logic will be added next
+                },
+
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .offset(y = (-18).dp)
+            )
         }
 
     } else {
